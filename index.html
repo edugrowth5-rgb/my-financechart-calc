@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
+    <title>Citizen Finance Pro</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg: #0a0a0a; --card: #111; --text: #fff;
+            --primary: #00ffcc; --accent: #cc66ff; --border: #333;
+        }
+        .light-mode {
+            --bg: #f0f2f5; --card: #ffffff; --text: #1a1a1a;
+            --primary: #007bff; --accent: #6610f2; --border: #ddd;
+        }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; transition: 0.3s; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; touch-action: manipulation; }
+
+        .nav { width: 100%; display: flex; justify-content: center; gap: 10px; padding: 15px; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .nav button { padding: 8px 15px; border: none; border-radius: 20px; background: var(--border); color: var(--text); cursor: pointer; font-weight: bold; font-size: 12px; }
+        .nav button.active { background: var(--primary); color: #000; box-shadow: 0 0 10px var(--primary); }
+
+        .page { display: none; width: 95%; max-width: 380px; padding: 20px 10px; animation: fadeIn 0.4s; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .calculator { background: #000; padding: 15px; border-radius: 25px; border: 3px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .display-container { position: relative; background: #111; border: 2px solid var(--primary); border-radius: 12px; margin-bottom: 15px; box-shadow: 0 0 15px var(--primary); }
+        #mem-ind { position: absolute; top: 5px; left: 10px; color: var(--accent); font-size: 11px; visibility: hidden; }
+        #display { width: 100%; height: 75px; font-size: 32px; text-align: right; padding: 25px 15px 5px 15px; background: transparent; color: var(--primary); border: none; outline: none; font-family: monospace; box-sizing: border-box; }
+        
+        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        button { height: 45px; cursor: pointer; border: none; border-radius: 8px; background: #1a1a1a; color: white; font-weight: bold; font-size: 13px; transition: 0.1s; }
+        button:active { transform: scale(0.9); filter: brightness(1.5); }
+        .btn-red { color: #ff4d4d; border: 1px solid #ff4d4d; }
+        .btn-orange { color: #ffa500; border: 1px solid #ffa500; }
+        .btn-accent { color: var(--accent); border: 1px solid var(--accent); }
+        .btn-equal { background: var(--primary); color: #000; }
+
+        .stat-card { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid var(--border); text-align: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .history-list { max-height: 150px; overflow-y: auto; background: #000; border-radius: 10px; padding: 10px; font-family: monospace; font-size: 12px; border: 1px solid var(--border); }
+        .btn-export { width: 100%; padding: 12px; margin-top: 10px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button id="nav-calc" class="active" onclick="switchPage('calc')">कैलकुलेटर</button>
+    <button id="nav-dash" onclick="switchPage('dash')">डैशबोर्ड</button>
+</div>
+
+<div id="calc-page" class="page active-page">
+    <div class="calculator">
+        <div class="display-container">
+            <span id="mem-ind">M</span>
+            <input type="text" id="display" value="0" readonly>
+        </div>
+        <div class="buttons">
+            <button class="btn-accent" onclick="checkBackward()">◀</button>
+            <button class="btn-accent" onclick="checkForward()">▶</button>
+            <button class="btn-orange" onclick="showGT()">GT</button>
+            <button class="btn-orange" onclick="markUP()">MU</button>
+            <button class="btn-red" onclick="clearAll()">AC</button>
+
+            <button class="btn-accent" onclick="scientific('sin')">sin</button>
+            <button class="btn-accent" onclick="scientific('cos')">cos</button>
+            <button class="btn-accent" onclick="scientific('tan')">tan</button>
+            <button class="btn-accent" onclick="scientific('pi')">π</button>
+            <button class="btn-red" onclick="backspace()">⌫</button>
+
+            <button class="btn-orange" onclick="mPlus()">M+</button>
+            <button class="btn-orange" onclick="mMinus()">M-</button>
+            <button class="btn-orange" onclick="mCheck()">MRC</button>
+            <button class="btn-orange" onclick="scientific('sqrt')">√</button>
+            <button class="btn-orange" onclick="press('/')">÷</button>
+
+            <button onclick="press('7')">7</button>
+            <button onclick="press('8')">8</button>
+            <button onclick="press('9')">9</button>
+            <button onclick="press('%')">%</button>
+            <button class="btn-orange" onclick="press('*')">×</button>
+
+            <button onclick="press('4')">4</button>
+            <button onclick="press('5')">5</button>
+            <button onclick="press('6')">6</button>
+            <button onclick="plusMinus()">+/-</button>
+            <button class="btn-orange" onclick="press('-')">-</button>
+
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2</button>
+            <button onclick="press('3')">3</button>
+            <button class="btn-equal" style="grid-row: span 2; height: auto;" onclick="calculate()">=</button>
+            <button class="btn-orange" onclick="press('+')">+</button>
+
+            <button onclick="press('0')">0</button>
+            <button onclick="press('00')">00</button>
+            <button onclick="press('.')">.</button>
+            <button onclick="toggleTheme()">🌓</button>
+            
+            <button style="grid-column: span 5; color: var(--primary); background: transparent; border: 1px dashed var(--primary); margin-top: 5px; height: 35px;" onclick="addAsIncome()">💰 ऐड टू इनकम</button>
+        </div>
+    </div>
+</div>
+
+<div id="dash-page" class="page">
+    <div class="stat-card">
+        <canvas id="myChart"></canvas>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <div class="stat-card" style="flex: 1;"><h3>इनकम</h3><p id="dash-in" style="color: var(--primary); margin: 0;">₹0</p></div>
+        <div class="stat-card" style="flex: 1;"><h3>GT</h3><p id="dash-gt" style="color: #33ff33; margin: 0;">₹0</p></div>
+    </div>
+    
+    <div class="history-list" id="history-list"></div>
+    
+    <button class="btn-export" onclick="exportData()">📥 Excel (CSV) डाउनलोड करें</button>
+    <button class="btn-red" style="width:100%; margin-top:10px; height:35px; background: transparent;" onclick="resetStorage()">🗑️ डेटा रीसेट</button>
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+
+    let income = parseFloat(localStorage.getItem('income')) || 0;
+    let gtMemory = parseFloat(localStorage.getItem('gtMemory')) || 0;
+    let historyLog = JSON.parse(localStorage.getItem('historyLog')) || [];
+    let mMemory = 0, shouldReset = false, checkIndex = -1, myChart = null;
+
+    const screen = document.getElementById('display');
+    const mInd = document.getElementById('mem-ind');
+
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.rate = 1.3;
+        window.speechSynthesis.speak(msg);
+    }
+
+    function switchPage(p) {
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active-page'));
+        document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active-page');
+        document.getElementById('nav-' + p).classList.add('active');
+        if(p === 'dash') updateChart();
+    }
+
+    function toggleTheme() { document.body.classList.toggle('light-mode'); }
+
+    function press(v) { 
+        if (shouldReset) { screen.value = ""; shouldReset = false; }
+        if (screen.value === "0" && v !== "." && v !== "00") screen.value = "";
+        screen.value += v;
+    }
+
+    function calculate() {
+        try {
+            let expr = screen.value.replace(/×/g, '*').replace(/÷/g, '/');
+            let res = eval(expr);
+            if (!isNaN(res)) {
+                gtMemory += res;
+                historyLog.unshift(screen.value + " = " + res);
+                if(historyLog.length > 30) historyLog.pop();
+                speak(res);
+                screen.value = res;
+                shouldReset = true;
+                updateUI();
+            }
+        } catch { screen.value = "Error"; speak("Error"); }
+    }
+
+    function updateUI() {
+        document.getElementById('dash-in').innerText = "₹" + income.toFixed(2);
+        document.getElementById('dash-gt').innerText = "₹" + gtMemory.toFixed(2);
+        document.getElementById('history-list').innerHTML = historyLog.map(h => `<div style="padding:4px; border-bottom:1px solid #222">${h}</div>`).join('');
+        localStorage.setItem('income', income);
+        localStorage.setItem('gtMemory', gtMemory);
+        localStorage.setItem('historyLog', JSON.stringify(historyLog));
+    }
+
+    function updateChart() {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Income', 'GT Sum'],
+                datasets: [{
+                    label: 'Finance',
+                    data: [income, gtMemory],
+                    backgroundColor: ['#00ffcc', '#cc66ff']
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#222' } } } }
+        });
+    }
+
+    function mPlus() { calculate(); mMemory += parseFloat(screen.value); mInd.style.visibility = "visible"; }
+    function mMinus() { calculate(); mMemory -= parseFloat(screen.value); mInd.style.visibility = "visible"; }
+    function mCheck() { screen.value = mMemory; shouldReset = true; }
+    function showGT() { screen.value = gtMemory; shouldReset = true; }
+    function backspace() { screen.value = screen.value.slice(0, -1) || "0"; }
+    function plusMinus() { screen.value = screen.value.startsWith("-") ? screen.value.slice(1) : "-" + screen.value; }
+    function markUP() { screen.value = (parseFloat(screen.value) / 0.9).toFixed(2); shouldReset = true; }
+    function addAsIncome() { income += parseFloat(screen.value) || 0; updateUI(); speak("Income Added"); }
+    function scientific(t) {
+        let v = parseFloat(screen.value);
+        if(t === 'sin') screen.value = Math.sin(v * Math.PI/180).toFixed(4);
+        if(t === 'pi') screen.value = Math.PI.toFixed(4);
+        if(t === 'sqrt') screen.value = Math.sqrt(v).toFixed(4);
+        shouldReset = true;
+    }
+    function exportData() {
+        let csv = "Calculation History\n" + historyLog.join("\n");
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Hisab.csv';
+        a.click();
+    }
+    function resetStorage() { if(confirm("Clear all data?")) { localStorage.clear(); location.reload(); } }
+    function clearAll() { screen.value = "0"; mMemory = 0; mInd.style.visibility = "hidden"; }
+    function checkForward() { if(historyLog.length > 0) { checkIndex = (checkIndex + 1) % historyLog.length; screen.value = historyLog[checkIndex].split('=')[0]; } }
+    function checkBackward() { if(historyLog.length > 0) { checkIndex = (checkIndex - 1 + historyLog.length) % historyLog.length; screen.value = historyLog[checkIndex].split('=')[0]; } }
+
+    updateUI();
+</script>
+</body>
+</html>
