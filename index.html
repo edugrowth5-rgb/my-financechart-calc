@@ -50,8 +50,8 @@
 <body>
 
 <div class="nav">
-    <button id="nav-calc" class="active" onclick="switchPage('calc')">कैलकुलेटर</button>
-    <button id="nav-dash" onclick="switchPage('dash')">डैशबोर्ड</button>
+    <button id="nav-calc" class="active" onclick="switchPage('calc')">CALCULATOR</button>
+    <button id="nav-dash" onclick="switchPage('dash')">DASHBOARD</button>
 </div>
 
 <div id="calc-page" class="page active-page">
@@ -102,7 +102,7 @@
             <button onclick="press('.')">.</button>
             <button onclick="toggleTheme()">🌓</button>
             
-            <button style="grid-column: span 5; color: var(--primary); background: transparent; border: 1px dashed var(--primary); margin-top: 5px; height: 35px;" onclick="addAsIncome()">💰 ऐड टू इनकम</button>
+            <button style="grid-column: span 5; color: var(--primary); background: transparent; border: 1px dashed var(--primary); margin-top: 5px; height: 35px;" onclick="addAsIncome()">💰 Add To Income</button>
         </div>
     </div>
 </div>
@@ -118,8 +118,8 @@
     
     <div class="history-list" id="history-list"></div>
     
-    <button class="btn-export" onclick="exportData()">📥 Excel (CSV) डाउनलोड करें</button>
-    <button class="btn-red" style="width:100%; margin-top:10px; height:35px; background: transparent;" onclick="resetStorage()">🗑️ डेटा रीसेट</button>
+    <button class="btn-export" onclick="exportData()">📥 Download Excel (CSV)</button>
+    <button class="btn-red" style="width:100%; margin-top:10px; height:35px; background: transparent;" onclick="resetStorage()">🗑️ Reset Data</button>
 </div>
 
 <script>
